@@ -1,67 +1,72 @@
-import tkinter as tk
-from tkinter import ttk
-
-import matplotlib.pyplot as plt
-
-from simulation import simulate_xray_transmission
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox
 from phantoms import generate_2d_phantom, display_phantom
+from simulation import simulate_xray_transmission
 
-class XRaySimulationApp(tk.Tk):
+class XRaySimulationApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.title('X-Ray Simulation')
+        self.initUI()
 
-        # Energy selection
-        self.energy_label = tk.Label(self, text='Beam Energy (keV):')
-        self.energy_label.pack()
+    def initUI(self):
+        self.setWindowTitle('X-Ray Simulation')
 
-        self.energy_var = tk.DoubleVar(value=60.0)  # Default value
-        self.energy_entry = tk.Entry(self, textvariable=self.energy_var)
-        self.energy_entry.pack()
+        # Layout
+        layout = QVBoxLayout()
+        self.setLayout(layout)
 
-        # X-Ray angle selection
-        self.angle_label = tk.Label(self, text='X-Ray Angle (degrees):')
-        self.angle_label.pack()
+        # Energy
+        self.energy_label = QLabel('Beam Energy (keV):')
+        layout.addWidget(self.energy_label)
 
-        self.angle_var = tk.DoubleVar(value=0.0)  # Default value
-        self.angle_entry = tk.Entry(self, textvariable=self.angle_var)
-        self.angle_entry.pack()
+        self.energy_entry = QLineEdit()
+        self.energy_entry.setText("60.0")
+        layout.addWidget(self.energy_entry)
 
-        # Distance from source to phantom
-        self.distance_sp_label = tk.Label(self, text='Source to Phantom Distance (cm):')
-        self.distance_sp_label.pack()
+        # X-Ray Angle
+        self.angle_label = QLabel('X-Ray Angle (degrees):')
+        layout.addWidget(self.angle_label)
 
-        self.distance_sp_var = tk.DoubleVar(value=100.0)  # Default value
-        self.distance_sp_entry = tk.Entry(self, textvariable=self.distance_sp_var)
-        self.distance_sp_entry.pack()
+        self.angle_entry = QLineEdit()
+        self.angle_entry.setText("0.0")
+        layout.addWidget(self.angle_entry)
 
-        # Distance from source to film (detector)
-        self.distance_sd_label = tk.Label(self, text='Source to Detector Distance (cm):')
-        self.distance_sd_label.pack()
+        # Source to Phantom Distance
+        self.distance_sp_label = QLabel('Source to Phantom Distance (cm):')
+        layout.addWidget(self.distance_sp_label)
 
-        self.distance_sd_var = tk.DoubleVar(value=200.0)  # Default value
-        self.distance_sd_entry = tk.Entry(self, textvariable=self.distance_sd_var)
-        self.distance_sd_entry.pack()
+        self.distance_sp_entry = QLineEdit()
+        self.distance_sp_entry.setText("100.0")
+        layout.addWidget(self.distance_sp_entry)
 
-        # Dropdown for μ values
-        self.mu_label = tk.Label(self, text='Select Phantom Material:')
-        self.mu_label.pack()
+        # Source to Detector Distance
+        self.distance_sd_label = QLabel('Source to Detector Distance (cm):')
+        layout.addWidget(self.distance_sd_label)
 
-        self.mu_options = {'Water': 0.2, 'Bone': 0.5, 'Metal': 1.0}  # Example values
-        self.mu_var = tk.StringVar(value='Water')  # Default selection
-        self.mu_dropdown = ttk.Combobox(self, textvariable=self.mu_var, values=list(self.mu_options.keys()))
-        self.mu_dropdown.pack()
+        self.distance_sd_entry = QLineEdit()
+        self.distance_sd_entry.setText("200.0")
+        layout.addWidget(self.distance_sd_entry)
 
-        # Start simulation button
-        self.start_button = tk.Button(self, text='Start Simulation', command=self.start_simulation)
-        self.start_button.pack()
+        # Material Dropdown
+        self.mu_label = QLabel('Select Phantom Material:')
+        layout.addWidget(self.mu_label)
 
-def start_simulation(self):
-        energy = self.energy_var.get()
-        angle = self.angle_var.get()
-        distance_sp = self.distance_sp_var.get()
-        distance_sd = self.distance_sd_var.get()
-        mu_value = self.mu_options[self.mu_var.get()]
+        self.mu_dropdown = QComboBox()
+        self.mu_options = {'Water': 0.2, 'Bone': 0.5, 'Metal': 1.0}
+        self.mu_dropdown.addItems(self.mu_options.keys())
+        layout.addWidget(self.mu_dropdown)
+
+        # Start Simulation Button
+        self.start_button = QPushButton('Start Simulation', self)
+        self.start_button.clicked.connect(self.start_simulation)
+        layout.addWidget(self.start_button)
+
+    def start_simulation(self):
+        energy = float(self.energy_entry.text())
+        angle = float(self.angle_entry.text())
+        distance_sp = float(self.distance_sp_entry.text())
+        distance_sd = float(self.distance_sd_entry.text())
+        mu_value = self.mu_options[self.mu_dropdown.currentText()]
 
         # Generate a simple 2D phantom for the simulation
         phantom = generate_2d_phantom(
@@ -69,19 +74,28 @@ def start_simulation(self):
             object_centers=[(50, 50)],
             object_radii=[20]
         )
-        
+
         # Simulate the X-ray transmission and get the 1D profile
         xray_profile = simulate_xray_transmission(
             phantom, energy, angle, distance_sp, distance_sd, mu_value
         )
-        
-        # Now we need to display this profile, let's use matplotlib for simplicity
+
+        # Display the profile
         self.display_xray_profile(xray_profile)
 
-def display_xray_profile(self, profile):
-    plt.figure("X-Ray Profile")
-    plt.plot(profile)
-    plt.xlabel('Detector Position')
-    plt.ylabel('Intensity')
-    plt.title('Simulated X-Ray Transmission Profile')
-    plt.show()
+    def display_xray_profile(self, profile):
+        # You can integrate Matplotlib with PyQt for displaying the profile
+        # This part will need to be adjusted for PyQt
+        import matplotlib.pyplot as plt
+        plt.figure("X-Ray Profile")
+        plt.plot(profile)
+        plt.xlabel('Detector Position')
+        plt.ylabel('Intensity')
+        plt.title('Simulated X-Ray Transmission Profile')
+        plt.show()
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = XRaySimulationApp()
+    ex.show()
+    sys.exit(app.exec_())
