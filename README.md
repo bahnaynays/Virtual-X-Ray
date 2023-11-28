@@ -12,3 +12,6 @@ Steps for installing and running the program:
 Installed libraries:
 pip install numpy scipy matplotlib opencv-python-headless pillow
 pip install pyqt5
+pip install numpy
+pip install matplotlib
+pip install opencv

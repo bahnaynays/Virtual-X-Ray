@@ -1,5 +1,8 @@
 import sys
+import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 from phantoms import generate_2d_phantom, display_phantom
 from simulation import simulate_xray_transmission
 
@@ -60,6 +63,10 @@ class XRaySimulationApp(QWidget):
         self.start_button = QPushButton('Start Simulation', self)
         self.start_button.clicked.connect(self.start_simulation)
         layout.addWidget(self.start_button)
+        
+        #Matplotlib displaying phantom
+        self.canvas = FigureCanvas(Figure(figsize=(5,3)))
+        layout.addWidget(self.canvas)
 
     def start_simulation(self):
         energy = float(self.energy_entry.text())
@@ -74,6 +81,7 @@ class XRaySimulationApp(QWidget):
             object_centers=[(50, 50)],
             object_radii=[20]
         )
+        self.display_phantom(phantom)
 
         # Simulate the X-ray transmission and get the 1D profile
         xray_profile = simulate_xray_transmission(
