@@ -3,7 +3,7 @@ import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from phantoms import generate_2d_phantom, display_phantom
+from phantoms import generate_2d_phantom
 from simulation import simulate_xray_transmission
 
 class XRaySimulationApp(QWidget):
@@ -78,9 +78,13 @@ class XRaySimulationApp(QWidget):
         # Generate a simple 2D phantom for the simulation
         phantom = generate_2d_phantom(
             dimensions=(100, 100),
-            object_centers=[(50, 50)],
-            object_radii=[20]
+            outer_rect=((10, 10), (90, 90)),
+            inner_rect=((30, 30), (70, 70)),
+            outer_value=1,
+            inner_value=2
         )
+        
+        #Displays the phantom
         self.display_phantom(phantom)
 
         # Simulate the X-ray transmission and get the 1D profile
@@ -90,6 +94,20 @@ class XRaySimulationApp(QWidget):
 
         # Display the profile
         self.display_xray_profile(xray_profile)
+        
+    def display_phantom(self, phantom):
+        """
+        Displays 2D phantom on Matplotlib canvas
+        
+        Parameters:
+        - phantom: 2D numpy array representing the phantom.
+        """
+        
+        self.canvas.figure.clear()
+        ax = self.canvas.figure.add_subplot(111)
+        ax.imshow(phantom, cmap='gray')
+        ax.axis('off')
+        self.canvas.draw()
 
     def display_xray_profile(self, profile):
         # You can integrate Matplotlib with PyQt for displaying the profile
