@@ -110,8 +110,10 @@ class XRaySimulationApp(QWidget):
         self.canvas.draw()
 
     def display_xray_profile(self, profile):
-        # You can integrate Matplotlib with PyQt for displaying the profile
+        # Can integrate Matplotlib with PyQt for displaying the profile
         # This part will need to be adjusted for PyQt
+        
+        #look into this further
         import matplotlib.pyplot as plt
         plt.figure("X-Ray Profile")
         plt.plot(profile)

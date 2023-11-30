@@ -14,15 +14,17 @@ def simulate_xray_transmission(phantom, energy, angle, distance_sp, distance_sd,
 
     Returns:
     - A 1D numpy array representing the X-ray transmission profile.
+    
+    Not even sure if this works properly yet.
     """
-    # Convert angle to radians for computation
+    # Convert angle to radians 
     angle_rad = np.deg2rad(angle)
 
     # Calculate the path length within the phantom for each X-ray
     path_lengths = np.linalg.norm(phantom.shape) / np.cos(angle_rad)  # Simplified for demonstration
 
     # Apply the exponential attenuation model
-    intensity_initial = 1.0  # Let's assume the initial intensity is 1 for simplicity
+    intensity_initial = 1.0  # No real reason why it's 1.0. Maybe make it empty until user assigns it?
     intensity_transmitted = intensity_initial * np.exp(-mu_value * path_lengths)
 
     # The "image" in this case is a 1D profile since we have a 2D phantom

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def generate_2d_phantom(dimensions, outer_rect, inner_rect, outer_value=1, inner_value=2):
+def generate_2d_phantom(dimensions, outer_rect, inner_rect, outer_value, inner_value):
     """
     Generates a 2D phantom with a rectangle inside another rectangle. That's basically a 2d thigh
 
