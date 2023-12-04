@@ -9,6 +9,11 @@ from simulation import simulate_xray_transmission
 class XRaySimulationApp(QWidget):
     def __init__(self):
         super().__init__()
+        self.energy_mu_map = {
+            '60': {'mu_outer': '0.5', 'mu_inner': '0.3'},  # Sample values, adjust as needed
+            '80': {'mu_outer': '0.6', 'mu_inner': '0.35'}, # Example values
+            # We might need to ad more energy values
+        }
         self.initUI()
 
     def initUI(self):
@@ -18,13 +23,14 @@ class XRaySimulationApp(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        # Energy
+        # Energy Dropdown menu
         self.energy_label = QLabel('Beam Energy (keV):')
-        layout.addWidget(self.energy_label)
+        self.layout().addWidget(self.energy_label)
 
-        self.energy_entry = QLineEdit()
-        self.energy_entry.setText("60.0")
-        layout.addWidget(self.energy_entry)
+        self.energy_dropdown = QComboBox()
+        self.energy_dropdown.addItems(self.energy_mu_map.keys())
+        self.energy_dropdown.currentTextChanged.connect(self.update_mu_vals)
+        self.layout().addWidget(self.energy_dropdown)
 
         # X-Ray Angle
         self.angle_label = QLabel('X-Ray Angle (degrees):')
@@ -33,6 +39,33 @@ class XRaySimulationApp(QWidget):
         self.angle_entry = QLineEdit()
         self.angle_entry.setText("0.0")
         layout.addWidget(self.angle_entry)
+        
+        # Mu inner + outer
+        self.mu_outer_label = QLabel('Attenuation Coefficient Outer (mu):')
+        layout.addWidget(self.mu_outer_label)
+        self.mu_outer_entry = QLineEdit()
+        self.mu_outer_entry.setText("0.5")  # Set a default value or leave it empty to enforce user input
+        layout.addWidget(self.mu_outer_entry)
+
+        self.mu_inner_label = QLabel('Attenuation Coefficient Inner (mu):')
+        layout.addWidget(self.mu_inner_label)
+        self.mu_inner_entry = QLineEdit()
+        self.mu_inner_entry.setText("0.3")  # Set a default value or leave it empty to enforce user input
+        layout.addWidget(self.mu_inner_entry)
+        
+        # Outer Radius
+        self.outer_radius_label = QLabel('Outer Radius (cm):')
+        layout.addWidget(self.outer_radius_label)
+        self.outer_radius_entry = QLineEdit()
+        self.outer_radius_entry.setPlaceholderText("Enter outer radius")
+        layout.addWidget(self.outer_radius_entry)
+
+        # Inner Radius
+        self.inner_radius_label = QLabel('Inner Radius (cm):')
+        layout.addWidget(self.inner_radius_label)
+        self.inner_radius_entry = QLineEdit()
+        self.inner_radius_entry.setPlaceholderText("Enter inner radius")
+        layout.addWidget(self.inner_radius_entry)
 
         # Source to Phantom Distance
         self.distance_sp_label = QLabel('Source to Phantom Distance (cm):')
@@ -55,7 +88,7 @@ class XRaySimulationApp(QWidget):
         layout.addWidget(self.mu_label)
 
         self.mu_dropdown = QComboBox()
-        self.mu_options = {'Water': 0.2, 'Bone': 0.5, 'Metal': 1.0}
+        self.mu_options = {'Bone': 0.5}
         self.mu_dropdown.addItems(self.mu_options.keys())
         layout.addWidget(self.mu_dropdown)
 
@@ -67,21 +100,32 @@ class XRaySimulationApp(QWidget):
         #Matplotlib displaying phantom
         self.canvas = FigureCanvas(Figure(figsize=(5,3)))
         layout.addWidget(self.canvas)
+        
+    def update_mu_vals(self, energy):
+        mu_values = self.energy_mu_map[energy]
+        self.mu_outer_entry.setText(mu_values['mu_outer'])
+        self.mu_inner_entry.setText(mu_values['mu_inner'])
 
     def start_simulation(self):
-        energy = float(self.energy_entry.text())
+        energy = float(self.energy_dropdown.currentText())
         angle = float(self.angle_entry.text())
         distance_sp = float(self.distance_sp_entry.text())
         distance_sd = float(self.distance_sd_entry.text())
-        mu_value = self.mu_options[self.mu_dropdown.currentText()]
+        outer_radius = float(self.outer_radius_entry.text())
+        inner_radius = float(self.inner_radius_entry.text())
+        mu_outer = float(self.mu_outer_entry.text())
+        mu_inner = float(self.mu_inner_entry.text())
+        
+        OUTER_VALUE = 1
+        INNER_VALUE = 2
 
         # Generate a simple 2D phantom for the simulation
         phantom = generate_2d_phantom(
-            dimensions=(100, 100),
-            outer_rect=((10, 10), (90, 90)),
-            inner_rect=((30, 30), (70, 70)),
-            outer_value=1,
-            inner_value=2
+            dimensions = (100, 100),
+            outer_radius = outer_radius,
+            inner_radius = inner_radius,
+            outer_value = OUTER_VALUE,  # These are the values used when drawing the phantom
+            inner_value = INNER_VALUE
         )
         
         #Displays the phantom
@@ -89,7 +133,15 @@ class XRaySimulationApp(QWidget):
 
         # Simulate the X-ray transmission and get the 1D profile
         xray_profile = simulate_xray_transmission(
-            phantom, energy, angle, distance_sp, distance_sd, mu_value
+            phantom,
+            energy,
+            angle, 
+            distance_sp, 
+            distance_sd, 
+            mu_outer, 
+            mu_inner,
+            OUTER_VALUE,
+            INNER_VALUE
         )
 
         # Display the profile
