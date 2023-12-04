@@ -1,28 +1,32 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def generate_2d_phantom(dimensions, outer_rect, inner_rect, outer_value, inner_value):
+def generate_2d_phantom(dimensions, outer_radius, inner_radius, outer_value, inner_value):
     """
-    Generates a 2D phantom with a rectangle inside another rectangle. That's basically a 2d thigh
+    Generates a 2D phantom with a cylinder inside another cylinder. That's basically a 2d thigh
 
     Parameters:
     - dimensions: a tuple (height, width) for the size of the phantom.
-    - outer_rect: a tuple (top_left, bottom_right) specifying the outer rectangle.
-    - inner_rect: a tuple (top_left, bottom_right) specifying the inner rectangle.
-    - outer_value: the value to fill in the outer rectangle.
-    - inner_value: the value to fill in the inner rectangle.
+    - outer_radius: the radius of the outer cylinder.
+    - inner_radius: the radius of the inner cylinder.
+    - outer_value: the value to fill in the outer cylinder.
+    - inner_value: the value to fill in the inner cylinder.
 
     Returns:
-    - A 2D numpy array representing the phantom with rectangles.
+    - A 2D numpy array representing the phantom with cylindrical regions.
     """
+    
     phantom = np.zeros(dimensions)
+    center = (dimensions[0] // 2, dimensions[1] // 2)
 
-    # Draw outer rectangle
-    outer_top_left, outer_bottom_right = outer_rect
-    phantom[outer_top_left[0]:outer_bottom_right[0], outer_top_left[1]:outer_bottom_right[1]] = outer_value
-
-    # Draw inner rectangle
-    inner_top_left, inner_bottom_right = inner_rect
-    phantom[inner_top_left[0]:inner_bottom_right[0], inner_top_left[1]:inner_bottom_right[1]] = inner_value
-
+    for y in range(dimensions[0]):
+        for x in range(dimensions[1]):
+            dist_from_center = np.sqrt((x - center[1]) ** 2 + (y - center[0]) ** 2)
+            
+            if dist_from_center < inner_radius:
+                phantom[y, x] = inner_value
+            
+            elif dist_from_center < outer_radius:
+                phantom[y, x] = outer_value
+    
     return phantom
