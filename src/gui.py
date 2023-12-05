@@ -14,6 +14,7 @@ class XRaySimulationApp(QWidget):
             '80': {'mu_outer': '0.6', 'mu_inner': '0.35'}, # Example values
             # We might need to ad more energy values
         }
+        self
         self.initUI()
 
     def initUI(self):
@@ -53,19 +54,19 @@ class XRaySimulationApp(QWidget):
         self.mu_inner_entry.setText("0.3")  # Set a default value or leave it empty to enforce user input
         layout.addWidget(self.mu_inner_entry)
         
-        # Outer Radius
+        # Outer Radius Dropdown Menu
         self.outer_radius_label = QLabel('Outer Radius (cm):')
-        layout.addWidget(self.outer_radius_label)
-        self.outer_radius_entry = QLineEdit()
-        self.outer_radius_entry.setPlaceholderText("Enter outer radius")
-        layout.addWidget(self.outer_radius_entry)
+        self.layout().addWidget(self.outer_radius_label)
+        self.outer_radius_dropdown = QComboBox()
+        self.outer_radius_dropdown.addItems(["A", "B", "C"]) #temporary placeholder
+        self.layout().addWidget(self.outer_radius_dropdown)
 
-        # Inner Radius
+        # Inner Radius Dropdown Menu
         self.inner_radius_label = QLabel('Inner Radius (cm):')
-        layout.addWidget(self.inner_radius_label)
-        self.inner_radius_entry = QLineEdit()
-        self.inner_radius_entry.setPlaceholderText("Enter inner radius")
-        layout.addWidget(self.inner_radius_entry)
+        self.layout().addWidget(self.inner_radius_label)
+        self.inner_radius_dropdown = QComboBox()
+        self.inner_radius_dropdown.addItems(["A", "B", "C"]) #temporary placeholder
+        self.layout().addWidget(self.inner_radius_dropdown)
 
         # Source to Phantom Distance
         self.distance_sp_label = QLabel('Source to Phantom Distance (cm):')
