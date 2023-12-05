@@ -19,3 +19,7 @@ pip install numpy
 pip install matplotlib
 
 pip install opencv
+
+
+Note on viewing histograms: When you want to update the input values, exit the histogram tab then press
+"Start Simulation" 

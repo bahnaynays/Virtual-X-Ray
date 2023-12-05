@@ -58,14 +58,14 @@ class XRaySimulationApp(QWidget):
         self.outer_radius_label = QLabel('Outer Radius (cm):')
         self.layout().addWidget(self.outer_radius_label)
         self.outer_radius_dropdown = QComboBox()
-        self.outer_radius_dropdown.addItems(["A", "B", "C"]) #temporary placeholder
+        self.outer_radius_dropdown.addItems(["15", "25"]) #temporary placeholder
         self.layout().addWidget(self.outer_radius_dropdown)
 
         # Inner Radius Dropdown Menu
         self.inner_radius_label = QLabel('Inner Radius (cm):')
         self.layout().addWidget(self.inner_radius_label)
         self.inner_radius_dropdown = QComboBox()
-        self.inner_radius_dropdown.addItems(["A", "B", "C"]) #temporary placeholder
+        self.inner_radius_dropdown.addItems(["6", "12"]) #temporary placeholder
         self.layout().addWidget(self.inner_radius_dropdown)
 
         # Source to Phantom Distance
@@ -112,8 +112,8 @@ class XRaySimulationApp(QWidget):
         angle = float(self.angle_entry.text())
         distance_sp = float(self.distance_sp_entry.text())
         distance_sd = float(self.distance_sd_entry.text())
-        outer_radius = float(self.outer_radius_entry.text())
-        inner_radius = float(self.inner_radius_entry.text())
+        outer_radius = float(self.outer_radius_dropdown.currentText())
+        inner_radius = float(self.inner_radius_dropdown.currentText())
         mu_outer = float(self.mu_outer_entry.text())
         mu_inner = float(self.mu_inner_entry.text())
         
