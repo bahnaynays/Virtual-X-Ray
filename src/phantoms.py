@@ -92,3 +92,33 @@ def generate_xray_image(phantom_3d):
     """
     
     return np.sum(phantom_3d, axis=0)
+
+def add_fracture(phantom, bone_radius, split_width, angle=0):
+    """
+    Adds a fracture to the bone in the leg phantom.
+
+    Parameters:
+    - phantom: 3D numpy array representing the leg phantom.
+    - bone_radius: Radius of the bone.
+    - split_width: Width of the fracture gap.
+    - angle: Angle of the fracture in degrees. Default is 0 (orthogonal to the bone).
+
+    Returns:
+    - Modified 3D numpy array representing the leg phantom with a fracture.
+    """
+    
+    dimensions = ()
+    center = (phantom.shape[1] // 2, phantom.shape[2] // 2)
+    angle_rad = np.deg2rad(angle)
+
+    for z in range(phantom.shape[0]):
+        for y in range(phantom.shape[1]):
+            for x in range(phantom.shape[2]):
+                # Calculate the distance from the center to the point (x, y)
+                dist_from_center = np.sqrt((x - center[1])**2 + (y - center[0])**2)
+                # Calculate the angle for the current point
+                current_angle = np.arctan2(y - center[0], x - center[1])
+                # Determine if the point is within the fracture zone
+                if dist_from_center < bone_radius and abs(current_angle - angle_rad) < np.deg2rad(split_width / 2):
+                    phantom[z, y, x] = 0  # Assign a value representing the gap
+    return phantom

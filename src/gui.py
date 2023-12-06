@@ -5,7 +5,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from phantoms import generate_2d_phantom
 from simulation import simulate_xray_transmission
-from phantoms import create_leg_phantom, add_orthogonal_split, generate_xray_image
+from phantoms import create_leg_phantom, add_orthogonal_split, generate_xray_image, add_fracture
 
 class XRaySimulationApp(QWidget):
     def __init__(self):
@@ -133,11 +133,17 @@ class XRaySimulationApp(QWidget):
         
         if fracture:
             leg_phantom = add_orthogonal_split(leg_phantom, split_depth)
+            orthogonal_fracture_phantom = add_fracture(leg_phantom, bone_radius, split_width=5, angle=0)
+            angled_fracture_phantom = add_fracture(leg_phantom, bone_radius, split_width=5, angle=45)
         
         #generate 2D X-ray image from the phantom
         xray_image = generate_xray_image(leg_phantom)
         
         self.display_xray_image(xray_image)
+        
+        # Display fractures
+        self.display_fractures(orthogonal_fracture_phantom, angled_fracture_phantom, slice_index=128)
+
         
         # Shows a 3D leg phantom slice on it's own window
         self.display_3d_leg_phantom_slice(leg_phantom, slice_index=128)
@@ -170,6 +176,33 @@ class XRaySimulationApp(QWidget):
 
         # Display the profile
         self.display_xray_profile(xray_profile)
+        
+    def display_fractures(self, orthogonal_fracture_phantom, angled_fracture_phantom, slice_index):
+    
+        self.fractures_dialog = QDialog(self)
+        self.fractures_dialog.setWindowTitle("Leg Phantom Fractures")
+        fractures_layout = QVBoxLayout()
+        fractures_canvas = FigureCanvas(Figure(figsize=(10, 5)))  # Adjust the size as needed
+        fractures_layout.addWidget(fractures_canvas)
+        self.fractures_dialog.setLayout(fractures_layout)
+    
+        # Setup the plots for orthogonal and angled fractures
+        ax1 = fractures_canvas.figure.add_subplot(121)
+        ax2 = fractures_canvas.figure.add_subplot(122)
+    
+        # Display orthogonal fracture slice
+        ax1.imshow(orthogonal_fracture_phantom[slice_index, :, :], cmap='gray')
+        ax1.set_title('Orthogonal Fracture')
+        ax1.axis('off')
+
+        # Display angled fracture slice
+        ax2.imshow(angled_fracture_phantom[slice_index, :, :], cmap='gray')
+        ax2.set_title('Angled Fracture')
+        ax2.axis('off')
+    
+        # Draw the canvas and show the dialog
+        fractures_canvas.draw()
+        self.fractures_dialog.show()
         
     def display_3d_leg_phantom_slice(self, phantom_3d, slice_index):
         """
