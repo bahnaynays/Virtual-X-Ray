@@ -22,4 +22,6 @@ pip install opencv
 
 
 Note on viewing histograms: When you want to update the input values, exit the histogram tab then press
-"Start Simulation" 
+"Start Simulation"
+
+Note: A lot of small display windows are overlapped.
