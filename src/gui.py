@@ -1,10 +1,11 @@
 import sys
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox, QDialog
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from phantoms import generate_2d_phantom
 from simulation import simulate_xray_transmission
+from phantoms import create_leg_phantom, add_orthogonal_split, generate_xray_image
 
 class XRaySimulationApp(QWidget):
     def __init__(self):
@@ -119,6 +120,28 @@ class XRaySimulationApp(QWidget):
         
         OUTER_VALUE = 1
         INNER_VALUE = 2
+        
+        # Creates 3d leg phantom
+        dimensions = (256, 256, 256)
+        leg_radius = 100
+        bone_radius = 50
+        leg_phantom = create_leg_phantom(dimensions, leg_radius, bone_radius)
+        
+        # Fracture
+        split_depth = 64
+        fracture = True
+        
+        if fracture:
+            leg_phantom = add_orthogonal_split(leg_phantom, split_depth)
+        
+        #generate 2D X-ray image from the phantom
+        xray_image = generate_xray_image(leg_phantom)
+        
+        self.display_xray_image(xray_image)
+        
+        # Shows a 3D leg phantom slice on it's own window
+        self.display_3d_leg_phantom_slice(leg_phantom, slice_index=128)
+
 
         # Generate a simple 2D phantom for the simulation
         phantom = generate_2d_phantom(
@@ -148,6 +171,45 @@ class XRaySimulationApp(QWidget):
         # Display the profile
         self.display_xray_profile(xray_profile)
         
+    def display_3d_leg_phantom_slice(self, phantom_3d, slice_index):
+        """
+        Displays a 2D slice of the 3D leg phantom on the Matplotlib canvas.
+        
+        Parameters:
+        - phantom_3d: 3D numpy array representing the leg phantom.
+        - slice_index: Index of the slice to be displayed.
+        """
+        min_val = np.min(phantom_3d[phantom_3d > 0]) if np.min(phantom_3d[phantom_3d > 0]) != 0 else 0.1
+        max_val = np.max(phantom_3d)
+
+        self.leg_phantom_slice_dialog = QDialog(self)
+        self.leg_phantom_slice_dialog.setWindowTitle("3D Leg Phantom Slice")
+        leg_phantom_slice_layout = QVBoxLayout()
+        leg_phantom_slice_canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        leg_phantom_slice_layout.addWidget(leg_phantom_slice_canvas)
+        self.leg_phantom_slice_dialog.setLayout(leg_phantom_slice_layout)
+        leg_phantom_slice_ax = leg_phantom_slice_canvas.figure.add_subplot(111)
+        
+        # Set vmin and vmax to the range of data
+        leg_phantom_slice_ax.imshow(phantom_3d[slice_index, :, :], cmap='gray', vmin=min_val, vmax=max_val)
+        leg_phantom_slice_ax.axis('off')
+        leg_phantom_slice_canvas.draw()
+        self.leg_phantom_slice_dialog.show()
+        
+    def display_xray_image(self, xray_image):
+        # Create a separate window for the X-ray image
+        self.xray_image_dialog = QDialog(self)
+        self.xray_image_dialog.setWindowTitle("X-Ray Image")
+        xray_image_layout = QVBoxLayout()
+        xray_image_canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        xray_image_layout.addWidget(xray_image_canvas)
+        self.xray_image_dialog.setLayout(xray_image_layout)
+        xray_image_ax = xray_image_canvas.figure.add_subplot(111)
+        xray_image_ax.imshow(xray_image, cmap='gray')
+        xray_image_ax.axis('off')
+        xray_image_canvas.draw()
+        self.xray_image_dialog.show()
+        
     def display_phantom(self, phantom):
         """
         Displays 2D phantom on Matplotlib canvas
@@ -156,11 +218,18 @@ class XRaySimulationApp(QWidget):
         - phantom: 2D numpy array representing the phantom.
         """
         
-        self.canvas.figure.clear()
-        ax = self.canvas.figure.add_subplot(111)
-        ax.imshow(phantom, cmap='gray')
-        ax.axis('off')
-        self.canvas.draw()
+       # Create a separate window for the 2D phantom
+        self.phantom_dialog = QDialog(self)
+        self.phantom_dialog.setWindowTitle("2D Phantom")
+        phantom_layout = QVBoxLayout()
+        phantom_canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        phantom_layout.addWidget(phantom_canvas)
+        self.phantom_dialog.setLayout(phantom_layout)
+        phantom_ax = phantom_canvas.figure.add_subplot(111)
+        phantom_ax.imshow(phantom, cmap='gray')
+        phantom_ax.axis('off')
+        phantom_canvas.draw()
+        self.phantom_dialog.show()
 
     def display_xray_profile(self, profile):
         # Can integrate Matplotlib with PyQt for displaying the profile
