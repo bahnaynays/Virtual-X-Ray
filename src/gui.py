@@ -179,9 +179,12 @@ class XRaySimulationApp(QWidget):
         - phantom_3d: 3D numpy array representing the leg phantom.
         - slice_index: Index of the slice to be displayed.
         """
-        min_val = np.min(phantom_3d[phantom_3d > 0]) if np.min(phantom_3d[phantom_3d > 0]) != 0 else 0.1
+        #print(f"Slice {slice_index} value range: {np.min(phantom_3d[slice_index])} to {np.max(phantom_3d[slice_index])}")
+
+        min_val = np.min(phantom_3d)
         max_val = np.max(phantom_3d)
 
+        # Show the dialog
         self.leg_phantom_slice_dialog = QDialog(self)
         self.leg_phantom_slice_dialog.setWindowTitle("3D Leg Phantom Slice")
         leg_phantom_slice_layout = QVBoxLayout()
@@ -189,12 +192,14 @@ class XRaySimulationApp(QWidget):
         leg_phantom_slice_layout.addWidget(leg_phantom_slice_canvas)
         self.leg_phantom_slice_dialog.setLayout(leg_phantom_slice_layout)
         leg_phantom_slice_ax = leg_phantom_slice_canvas.figure.add_subplot(111)
-        
-        # Set vmin and vmax to the range of data
+
+        # Display the slice using the grayscale colormap and appropriate vmin and vmax
         leg_phantom_slice_ax.imshow(phantom_3d[slice_index, :, :], cmap='gray', vmin=min_val, vmax=max_val)
         leg_phantom_slice_ax.axis('off')
         leg_phantom_slice_canvas.draw()
         self.leg_phantom_slice_dialog.show()
+        
+        
         
     def display_xray_image(self, xray_image):
         # Create a separate window for the X-ray image
